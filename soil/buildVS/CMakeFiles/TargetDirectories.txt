@@ -1,0 +1,3 @@
+C:/soil/buildVS/CMakeFiles/soil.dir
+C:/soil/buildVS/CMakeFiles/ALL_BUILD.dir
+C:/soil/buildVS/CMakeFiles/ZERO_CHECK.dir

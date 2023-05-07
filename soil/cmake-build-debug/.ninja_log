@@ -1,0 +1,8 @@
+# ninja log v5
+339	349	1683463653005376523	libsoil.a	47fc1a066061a947
+0	3	0	clean	e345df4c23dc7c50
+11	255	7051688051500053	CMakeFiles/soil.dir/src/image_helper.c.obj	2e7832a8c252fcf7
+22	322	7051688052200038	CMakeFiles/soil.dir/src/image_DXT.c.obj	6e5450e70ef79653
+17	1263	7051688061586028	CMakeFiles/soil.dir/src/stb_image_aug.c.obj	747fccd71ee3528d
+27	1996	7051688068941102	CMakeFiles/soil.dir/src/SOIL.c.obj	af4e11e0b6443f1e
+1997	2090	7051688069901534	libsoil.a	8b736fe1a8a9e7df
