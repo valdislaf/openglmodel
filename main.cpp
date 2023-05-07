@@ -15,66 +15,175 @@
 
 #include <locale.h>
 
+
 #include <ft2build.h>
+#include <vector>
 #include FT_FREETYPE_H
-GLuint VBO, VAO,VAO1, VBO1;
+
+#include "SOIL/SOIL.h"
+#include "SOIL/stb_image_aug.h"
+#include "SOIL/image_helper.h"
+#include "SOIL/image_DXT.h"
+
+GLuint VBO, VAO,VAO1, VBO1, VAO2, VBO2;
+GLuint skyboxVBO, skyboxVAO;
 GLuint vao_text;
 GLuint CompileShaders();
 GLuint CompileShadersCube();
 GLuint CompileShadersCube1();
+GLuint CompileShadersSkyBox();
+void LoadTaxturesSkyBox();
+bool loadOBJ(const char* path, std::vector<glm::vec3>& vertices, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& normals);
 float aspectRatio=1.0f;
 int w = 800;
 int h = 800;
+size_t size;
+GLfloat* verticesArray = nullptr;
+//
+//GLfloat skyboxVertices[] = {
+//	// координаты вершин        // текстурные координаты
+//	// верхняя грань
+//	-1.0f,  1.0f, -1.0f,        0.0f, 1.0f,
+//	-1.0f,  1.0f,  1.0f,        0.0f, 0.0f,
+//	 1.0f,  1.0f,  1.0f,        1.0f, 0.0f,
+//	 1.0f,  1.0f, -1.0f,        1.0f, 1.0f,
+//
+//	 // нижняя грань
+//	 -1.0f, -1.0f, -1.0f,        1.0f, 1.0f,
+//	  1.0f, -1.0f, -1.0f,        0.0f, 1.0f,
+//	  1.0f, -1.0f,  1.0f,        0.0f, 0.0f,
+//	 -1.0f, -1.0f,  1.0f,        1.0f, 0.0f,
+//
+//	 // передняя грань
+//	 -1.0f,  1.0f,  1.0f,        0.0f, 1.0f,
+//	 -1.0f, -1.0f,  1.0f,        0.0f, 0.0f,
+//	  1.0f, -1.0f,  1.0f,        1.0f, 0.0f,
+//	  1.0f,  1.0f,  1.0f,        1.0f, 1.0f,
+//
+//	  // задняя грань
+//	   1.0f,  1.0f, -1.0f,        0.0f, 0.0f,
+//	   1.0f, -1.0f, -1.0f,        0.0f, 1.0f,
+//	  -1.0f, -1.0f, -1.0f,        1.0f,1.0f,
+//	  -1.0f, 1.0f, -1.0f,         1.0f, 0.0f,
+//
+//	 // правая грань
+//	 1.0f,  1.0f,  1.0f,        1.0f, 0.0f,
+//	 1.0f, -1.0f,  1.0f,        1.0f, 1.0f,
+//	 1.0f, -1.0f, -1.0f,        0.0f, 1.0f,
+//	 1.0f,  1.0f, -1.0f,        0.0f, 0.0f,
+//
+//	 // левая грань
+//	 -1.0f,  1.0f, -1.0f,        0.0f, 0.0f,
+//	 -1.0f, -1.0f, -1.0f,        1.0f, 0.0f,
+//	 -1.0f, -1.0f,  1.0f,        1.0f, 1.0f,
+//	 -1.0f,  1.0f,  1.0f,        0.0f, 1.0f
+//
+//};
 // Создание вершинных данных
+float skyboxVertices[] = {
+	// координаты вершин
+	// задняя грань 
+	-1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f,  1.0f, -1.0f,
+	 1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f, -1.0f, -1.0f,
+
+	// передняя грань  
+	-1.0f, -1.0f,  1.0f,
+	 -1.0f, 1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	1.0f,  -1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	// левая грань
+	-1.0f,  1.0f,  1.0f,
+	-1.0f,  -1.0f, 1.0f,
+	-1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f, -1.0f,
+	-1.0f, 1.0f,  -1.0f,
+	-1.0f,  1.0f,  1.0f,
+
+	// правая грань  // 
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+
+	 // нижняя грань  // 
+	 -1.0f, -1.0f, -1.0f,
+	 -1.0f, -1.0f,  1.0f,
+	  1.0f, -1.0f, -1.0f,
+	  1.0f, -1.0f, -1.0f,
+	 -1.0f, -1.0f,  1.0f,
+	  1.0f, -1.0f,  1.0f,
+
+
+	  // верхняя грань
+	 -1.0f, 1.0f, -1.0f,
+	 1.0f, 1.0f, -1.0f,
+	 -1.0f, 1.0f,  1.0f,	  
+      1.0f, 1.0f, 1.0f,
+      -1.0f, 1.0f, 1.0f,
+      1.0f, 1.0f, -1.0f
+   
+      
+};
+
+
 GLfloat vertices[] = {
 
-	// Верхняя грань
-	-0.5f, 0.5f, -0.5f, 0.f, 1.f, 0.f,
-	-0.5f, 0.5f, 0.5f, 0.f, 1.f, 0.f,
-	0.5f, 0.5f, 0.5f, 0.f, 1.f, 0.f,
-	0.5f, 0.5f, 0.5f, 0.f, 1.f, 0.f,
-	0.5f, 0.5f, -0.5f, 0.f, 1.f, 0.f,
-	-0.5f, 0.5f, -0.5f, 0.f, 1.f, 0.f,
+        // Верхняя грань
+        -0.5f, 0.5f, -0.5f, 0.f, 1.f, 0.f,
+        -0.5f, 0.5f, 0.5f, 0.f, 1.f, 0.f,
+        0.5f, 0.5f, 0.5f, 0.f, 1.f, 0.f,
+        0.5f, 0.5f, 0.5f, 0.f, 1.f, 0.f,
+        0.5f, 0.5f, -0.5f, 0.f, 1.f, 0.f,
+        -0.5f, 0.5f, -0.5f, 0.f, 1.f, 0.f,
 
-   // Нижняя грань
-	-0.5f, -0.5f, -0.5f, 1.f, 0.f, 0.f,
-	0.5f, -0.5f, -0.5f, 1.f, 0.f, 0.f,
-	0.5f, -0.5f, 0.5f, 1.f, 0.f, 0.f,
-	0.5f, -0.5f, 0.5f, 1.f, 0.f, 0.f,
-	-0.5f, -0.5f, 0.5f, 1.f, 0.f, 0.f,   
-	-0.5f, -0.5f, -0.5f, 1.f, 0.f, 0.f,
+        // Нижняя грань
+        -0.5f, -0.5f, -0.5f, 1.f, 0.f, 0.f,
+        0.5f, -0.5f, -0.5f, 1.f, 0.f, 0.f,
+        0.5f, -0.5f, 0.5f, 1.f, 0.f, 0.f,
+        0.5f, -0.5f, 0.5f, 1.f, 0.f, 0.f,
+        -0.5f, -0.5f, 0.5f, 1.f, 0.f, 0.f,
+        -0.5f, -0.5f, -0.5f, 1.f, 0.f, 0.f,
 
-  // Левая грань
-  -0.5f, -0.5f, -0.5f, 0.f, 0.f, 1.f,
-   -0.5f, -0.5f,  0.5f, 0.f, 0.f, 1.f,
-	 -0.5f,  0.5f,  0.5f, 0.f, 0.f, 1.f,
-  -0.5f,  0.5f,  0.5f, 0.f, 0.f, 1.f,
-  -0.5f,  0.5f, -0.5f, 0.f, 0.f, 1.f, 
-  -0.5f, -0.5f, -0.5f, 0.f, 0.f, 1.f,
+        // Левая грань
+        -0.5f, -0.5f, -0.5f, 0.f, 0.f, 1.f,
+        -0.5f, -0.5f,  0.5f, 0.f, 0.f, 1.f,
+        -0.5f,  0.5f,  0.5f, 0.f, 0.f, 1.f,
+        -0.5f,  0.5f,  0.5f, 0.f, 0.f, 1.f,
+        -0.5f,  0.5f, -0.5f, 0.f, 0.f, 1.f,
+        -0.5f, -0.5f, -0.5f, 0.f, 0.f, 1.f,
 
-  // Правая грань
-	0.5f, -0.5f, -0.5f, 1.f, 1.f, 0.f,
-		0.5f,  0.5f, -0.5f, 1.f, 1.f, 0.f,
-			0.5f, 0.5f, 0.5f, 1.f, 1.f, 0.f,
-	0.5f, 0.5f, 0.5f, 1.f, 1.f, 0.f,
-	0.5f, -0.5f, 0.5f, 1.f, 1.f, 0.f,
-	0.5f, -0.5f, -0.5f, 1.f, 1.f, 0.f,
+        // Правая грань
+        0.5f, -0.5f, -0.5f, 1.f, 1.f, 0.f,
+        0.5f,  0.5f, -0.5f, 1.f, 1.f, 0.f,
+        0.5f, 0.5f, 0.5f, 1.f, 1.f, 0.f,
+        0.5f, 0.5f, 0.5f, 1.f, 1.f, 0.f,
+        0.5f, -0.5f, 0.5f, 1.f, 1.f, 0.f,
+        0.5f, -0.5f, -0.5f, 1.f, 1.f, 0.f,
 
-	// Задняя грань
-	-0.5f, -0.5f, -0.5f, 1.f, 0.f, 1.f,
-		-0.5f,  0.5f, -0.5f, 1.f, 0.f, 1.f,
-			 0.5f,  0.5f, -0.5f, 1.f, 0.f, 1.f,
-	 0.5f,  0.5f, -0.5f, 1.f, 0.f, 1.f,
-	 0.5f, -0.5f, -0.5f, 1.f, 0.f, 1.f,
-	-0.5f, -0.5f, -0.5f, 1.f, 0.f, 1.f,
+        // Задняя грань
+        -0.5f, -0.5f, -0.5f, 1.f, 0.f, 1.f,
+        -0.5f,  0.5f, -0.5f, 1.f, 0.f, 1.f,
+        0.5f,  0.5f, -0.5f, 1.f, 0.f, 1.f,
+        0.5f,  0.5f, -0.5f, 1.f, 0.f, 1.f,
+        0.5f, -0.5f, -0.5f, 1.f, 0.f, 1.f,
+        -0.5f, -0.5f, -0.5f, 1.f, 0.f, 1.f,
 
-	// Передняя грань
-	-0.5f, -0.5f, 0.5f, 0.f, 1.f, 1.f,
-		 0.5f, -0.5f, 0.5f, 0.f, 1.f, 1.f,
-			 0.5f,  0.5f, 0.5f, 0.f, 1.f, 1.f,
-	  0.5f,  0.5f, 0.5f, 0.f, 1.f, 1.f,
-	-0.5f,  0.5f, 0.5f, 0.f, 1.f, 1.f,
-	-0.5f, -0.5f, 0.5f, 0.f, 1.f, 1.f,
+        // Передняя грань
+        -0.5f, -0.5f, 0.5f, 0.f, 1.f, 1.f,
+        0.5f, -0.5f, 0.5f, 0.f, 1.f, 1.f,
+        0.5f,  0.5f, 0.5f, 0.f, 1.f, 1.f,
+        0.5f,  0.5f, 0.5f, 0.f, 1.f, 1.f,
+        -0.5f,  0.5f, 0.5f, 0.f, 1.f, 1.f,
+        -0.5f, -0.5f, 0.5f, 0.f, 1.f, 1.f,
 };
 
 struct Character {
@@ -146,8 +255,8 @@ void initcube() {
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), verticesArray, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -167,7 +276,11 @@ void initcube1() {
 	glBindVertexArray(VAO1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//n * 6 * sizeof(GLfloat)
+	
+	//glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), verticesArray, GL_STATIC_DRAW);
+
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -177,6 +290,23 @@ void initcube1() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
+
+}
+
+
+void initskybox() {
+
+	// Создание буфера вершин для куба	
+	glGenBuffers(1, &skyboxVBO);
+	glGenVertexArrays(1, &skyboxVAO);
+	glBindVertexArray(skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
 
 }
 int init(GLuint& buffer) {
@@ -279,6 +409,29 @@ void angspd(float &angle,float &speed) {
 
 int main(int argc, char* argv[]) {
 
+	std::vector<glm::vec3> vertices{};
+	std::vector<glm::vec2> uvs{};
+	std::vector<glm::vec3> normals{};
+	bool result = loadOBJ("../plane.obj", vertices, uvs, normals);
+	//	bool result = loadOBJ("../cube10.obj", vertices, uvs, normals);
+	size = vertices.size() * 6;
+	verticesArray = new GLfloat[size];
+	int index = 0;
+	float r = 0.0f; float g = 0.0f; float b = 0.0f;
+	for (unsigned int i = 0; i < vertices.size(); i++) {
+		verticesArray[index++] = vertices[i].x;
+		verticesArray[index++] = vertices[i].y;
+		verticesArray[index++] = vertices[i].z;
+		verticesArray[index++] = r;
+		verticesArray[index++] = g;
+		verticesArray[index++] = b;
+		r += 0.5; g += 0.5; b += 0.5;
+		if (r > 1.f) {
+			r = 0.f; }if (g > 1.f) { g = 0.f; }if (b > 1.f) { b = 0.f; }
+	}
+
+	
+
 	//setlocale(LC_ALL, "Russian");
 	setlocale(LC_ALL, "en_US.UTF-8");
 
@@ -337,7 +490,7 @@ int main(int argc, char* argv[]) {
 		float px_w = 2.0f / (float)widthinit;
 		float px_h = 2.0f / (float)heightinit;
 
-		float cameraSpeed = 0.01f;
+		float cameraSpeed = 1.11f;
 		glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, -10.0f);
 		glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -351,6 +504,15 @@ int main(int argc, char* argv[]) {
 		double lastMouseX, lastMouseY;
 		glfwGetCursorPos(window, &lastMouseX, &lastMouseY);
 		float cameraSpeed_temp = cameraSpeed;
+
+		GLuint shaderskybox = CompileShadersSkyBox();
+		glUseProgram(shaderskybox);
+		LoadTaxturesSkyBox();
+		initskybox();
+		GLint texId;
+		glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &texId);
+
+
 	while (!glfwWindowShouldClose(window)) {
 		
 		float r_w = (float)w / (float)widthinit;
@@ -374,25 +536,16 @@ int main(int argc, char* argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(shadercube);
-		//glViewport(0, 0, height, height);
-
-		// Матрица преобразования
-		glm::mat4 transform = glm::mat4(1.0f);
-		float ze = -1.7f - 12.1f * angle;
-		transform = glm::translate(transform, glm::vec3(0.0f, -0.6f, -6.1f));
-		//transform = glm::rotate(transform, (float)glfwGetTime() / 1, glm::vec3(1.0f*anglef, 1.0f, 1.0f* angle));
-		transform = glm::scale(transform, glm::vec3(0.7f, 0.7f, 0.7f));
 
 		// Матрица проекции
-		float fov =  45.0f;
-		glm::mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f , 1000.0f );
-		
+		float fov = 45.0f;
+		glm::mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 1000.0f);
+
 		// Матрица вида
-		
-		
-	
-		glm::vec3 directionN(glm::cos(verticalAngle)* glm::sin(horizontalAngle), glm::sin(verticalAngle), glm::cos(verticalAngle)* glm::cos(horizontalAngle));
+
+
+
+		glm::vec3 directionN(glm::cos(verticalAngle) * glm::sin(horizontalAngle), glm::sin(verticalAngle), glm::cos(verticalAngle) * glm::cos(horizontalAngle));
 		glm::vec3 right = glm::normalize(glm::cross(directionN, up));
 		glm::vec3 forward = glm::normalize(glm::cross(right, up));
 		cameraSpeed = cameraSpeed_temp;
@@ -444,24 +597,32 @@ int main(int argc, char* argv[]) {
 
 		glm::vec3 cameraTarget = cameraPos + direction;
 		glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
+
+
+		glDepthFunc(GL_ALWAYS);
+		glUseProgram(shaderskybox);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, texId);
+		glUniformMatrix4fv(glGetUniformLocation(shaderskybox, "projection"), 1, GL_FALSE, &projection[0][0]);
+		glm::mat4 viewMatrix = glm::mat4(glm::mat3(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderskybox, "view"), 1, GL_FALSE, &viewMatrix[0][0]);
+		glUniform1i(glGetUniformLocation(shaderskybox, "skybox"), 0);
+		glBindVertexArray(skyboxVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthFunc(GL_LESS);
+
+
+
+		glUseProgram(shadercube);		
+		//glViewport(0, 0, height, height);
+
+		// Матрица преобразования
+		glm::mat4 transform = glm::mat4(1.0f);
+		float ze = -1.7f - 12.1f * angle;
+		transform = glm::translate(transform, glm::vec3(0.0f, -0.6f, -6.1f));
+		//transform = glm::rotate(transform, (float)glfwGetTime() / 1, glm::vec3(1.0f*anglef, 1.0f, 1.0f* angle));
+		transform = glm::scale(transform, glm::vec3(0.7f, 0.7f, 0.7f));
 		
-		//// Обработка событий мыши
-		//double mouseX, mouseY;
-		//glfwGetCursorPos(window, &mouseX, &mouseY);
-		//float deltaMouseX = float(mouseX - lastMouseX);
-		//float deltaMouseY = float(mouseY - lastMouseY);
-		//lastMouseX = mouseX;
-		//lastMouseY = mouseY;
-
-		//// Поворот взгляда камеры вокруг оси Y
-		//horizontalAngle -= mouseSpeed * deltaMouseX;
-		////glm::vec3 cameraTarget = cameraPos + glm::vec3(glm::cos(horizontalAngle), 0.0f, glm::sin(horizontalAngle));
-		//glm::vec3 direction(glm::cos(verticalAngle) * glm::sin(horizontalAngle), glm::sin(verticalAngle), glm::cos(verticalAngle) * glm::cos(horizontalAngle));
-		//glm::vec3 cameraTarget = cameraPos + direction;
-
-		//glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
-
-
 	
 		// Установка матриц в шейдер
 		GLuint transformLoc = glGetUniformLocation(shadercube, "transform");
@@ -473,10 +634,10 @@ int main(int argc, char* argv[]) {
 		GLuint viewLoc = glGetUniformLocation(shadercube, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
+
 		// Отрисовка треугольника	
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
+		glDrawArrays(GL_TRIANGLES, 0, size);
 
 
 
@@ -486,7 +647,7 @@ int main(int argc, char* argv[]) {
 		// Матрица преобразования
 		glm::mat4 transform1 = glm::mat4(1.0f);
 		float ze1 = -1.7f - 12.1f * angle;
-		transform1 = glm::translate(transform1, glm::vec3(0.6f, 0.6f, -3.0f));
+		transform1 = glm::translate(transform1, glm::vec3(0.6f, 0.6f, -6.0f));
 		transform1 = glm::rotate(transform1, (float)glfwGetTime() / 1, glm::vec3(0.4f*anglef, 0.1f, 0.1f* angle));
 		transform1 = glm::scale(transform1, glm::vec3(0.7f, 0.7f, 0.7f));
 
@@ -505,7 +666,7 @@ int main(int argc, char* argv[]) {
 	
 		// Отрисовка треугольника	
 		glBindVertexArray(VAO1);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, size);
 	
 
 		//glUseProgram(shadercube);
@@ -545,7 +706,7 @@ int main(int argc, char* argv[]) {
 	//		near - расстояние до ближней плоскости отсечения(near clipping plane)
 	//		far - расстояние до дальней плоскости отсечения(far clipping plane)
 
-
+	
 
 
 		// настройка глубины для текста
@@ -587,6 +748,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	printf("%d", glGetError());
+	delete[] verticesArray;
 	return 0;
 }
 
@@ -863,3 +1025,305 @@ void main()
 	return shader_programm;
 
 }
+
+bool loadOBJ(const char* path, std::vector<glm::vec3>& vertices, std::vector<glm::vec2>& uvs, std::vector<glm::vec3>& normals) {
+	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
+	std::vector<glm::vec3> tempVertices;
+	std::vector<glm::vec2> tempUvs;
+	std::vector<glm::vec3> tempNormals;
+
+	FILE* file = fopen(path, "r");
+	if (file == NULL) {
+		printf("Impossible to open the file !\n");
+		return false;
+	}
+
+	while (1) {
+		char lineHeader[128];
+		int res = fscanf(file, "%s", lineHeader);
+		if (res == EOF)
+			break;
+		if (strcmp(lineHeader, "v") == 0) {
+			glm::vec3 vertex;
+			fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+			tempVertices.push_back(vertex);
+		}
+		else if (strcmp(lineHeader, "vt") == 0) {
+			glm::vec2 uv;
+			fscanf(file, "%f %f\n", &uv.x, &uv.y);
+			tempUvs.push_back(uv);
+		}
+		else if (strcmp(lineHeader, "vn") == 0) {
+			glm::vec3 normal;
+			fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+			tempNormals.push_back(normal);
+		}
+		else if (strcmp(lineHeader, "f") == 0) {
+			unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+			int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
+				&vertexIndex[0], &uvIndex[0], &normalIndex[0],
+				&vertexIndex[1], &uvIndex[1], &normalIndex[1],
+				&vertexIndex[2], &uvIndex[2], &normalIndex[2]);
+			if (matches != 9) {
+				printf("File can't be read by our simple parser :-( Try exporting with other options\n");
+				return false;
+			}
+			vertexIndices.push_back(vertexIndex[0]);
+			vertexIndices.push_back(vertexIndex[1]);
+			vertexIndices.push_back(vertexIndex[2]);
+			uvIndices.push_back(uvIndex[0]);
+			uvIndices.push_back(uvIndex[1]);
+			uvIndices.push_back(uvIndex[2]);
+			normalIndices.push_back(normalIndex[0]);
+			normalIndices.push_back(normalIndex[1]);
+			normalIndices.push_back(normalIndex[2]);
+		}
+	}
+
+	for (unsigned int i = 0; i < vertexIndices.size(); i++) {
+		unsigned int vertexIndex = vertexIndices[i];
+		glm::vec3 vertex = tempVertices[vertexIndex - 1];
+		vertices.push_back(vertex);
+	}
+	for (unsigned int i = 0; i < uvIndices.size(); i++) {
+		unsigned int uvIndex = uvIndices[i];
+		glm::vec2 uv = tempUvs[uvIndex - 1];
+		uvs.push_back(uv);
+	}
+	for (unsigned int i = 0; i < normalIndices.size(); i++) {
+		unsigned int normalIndex = normalIndices[i];
+		glm::vec3 normal = tempNormals[normalIndex - 1];
+		normals.push_back(normal);
+	}
+
+		return true;
+}
+
+
+
+GLuint CompileShadersSkyBox() {
+
+	GLuint shader_programm = glCreateProgram();
+
+	GLuint vs, fs;
+
+	const char* vertexShaderSource = R"glsl(
+#version 330 core
+layout (location = 0) in vec3 position;
+
+uniform mat4 projection;
+uniform mat4 view;
+
+out vec3 TexCoord;
+
+void main()
+{
+    TexCoord = position;
+    vec4 pos = projection * view * vec4(position, 1.0);
+    gl_Position = pos.xyww;
+}
+)glsl";
+
+	const char* fragment_shader_source = R"(
+        #version 330 core
+in vec3 TexCoord;
+
+uniform samplerCube skybox;
+
+out vec4 color;
+
+void main()
+{
+    color = texture(skybox, TexCoord);
+}
+
+
+)";
+
+	vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, &vertexShaderSource, nullptr);
+	glCompileShader(vs);
+
+	GLint isCompiled = 0;
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &isCompiled);
+
+	if (isCompiled == GL_FALSE) {
+		GLint maxLength = 0;
+		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &maxLength);
+
+		// The maxLength includes the NULL character
+		char* error = (char*)malloc(maxLength);
+		glGetShaderInfoLog(vs, maxLength, &maxLength, error);
+		printf("Vertex shader error: ");
+		printf("%s", error);
+
+		free(error);
+	}
+
+	glAttachShader(shader_programm, vs);
+
+	fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &fragment_shader_source, NULL);
+	glCompileShader(fs);
+
+	isCompiled = 0;
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &isCompiled);
+
+	if (isCompiled == GL_FALSE) {
+		GLint maxLength = 0;
+		glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &maxLength);
+
+		// The maxLength includes the NULL character
+		char* error = (char*)malloc(maxLength);
+		glGetShaderInfoLog(fs, maxLength, &maxLength, error);
+		printf("Fragment shader error: ");
+		printf("%s", error);
+
+		free(error);
+	}
+
+	glAttachShader(shader_programm, fs);
+
+	glLinkProgram(shader_programm);
+
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+
+	return shader_programm;
+
+}
+
+
+void LoadTaxturesSkyBox() {
+	// Загрузка шести текстур кубической карты
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	// Загрузка текстуры для верхней стороны коробки
+	int width, height;
+	unsigned char* data = SOIL_load_image("../top.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	SOIL_free_image_data(data);
+
+	// Загрузка текстуры для нижней стороны коробки
+	data = SOIL_load_image("../bottom.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	SOIL_free_image_data(data);
+
+	// Загрузка текстуры для задней стороны коробки
+	data = SOIL_load_image("../back.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	SOIL_free_image_data(data);
+
+	// Загрузка текстуры для передней стороны коробки
+	data = SOIL_load_image("../front.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	SOIL_free_image_data(data);
+
+	// Загрузка текстуры для правой стороны коробки
+	data = SOIL_load_image("../right.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	SOIL_free_image_data(data);
+
+	// Загрузка текстуры для левой стороны коробки
+	data = SOIL_load_image("../left.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	SOIL_free_image_data(data);
+
+	// Установка параметров текстуры кубической карты
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+}
+
+
+//
+//GLfloat skyboxVertices[] = {
+//	// Позиции вершин для стороны "верх"
+//	-1.0f,  1.0f, -1.0f,
+//	-1.0f,  1.0f,  1.0f,
+//	1.0f,  1.0f,  1.0f,
+//	1.0f,  1.0f,  1.0f,
+//	1.0f,  1.0f, -1.0f,
+//	-1.0f,  1.0f, -1.0f,
+//	// Для каждой из шести сторон коробки
+//	0.0f,  0.0f,
+//	0.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  0.0f,
+//	0.0f,  0.0f,
+//	// Позиции вершин для стороны "низ"
+//	-1.0f, -1.0f, -1.0f,
+//	1.0f, -1.0f, -1.0f,
+//	1.0f, -1.0f,  1.0f,
+//	1.0f, -1.0f,  1.0f,
+//	-1.0f, -1.0f,  1.0f,
+//	-1.0f, -1.0f, -1.0f,
+//	// Для каждой из шести сторон коробки
+//	0.0f,  0.0f,
+//	0.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  0.0f,
+//	0.0f,  0.0f,
+//	// Позиции вершин для стороны "лево"
+//	-1.0f, -1.0f,  1.0f,
+//	-1.0f,  1.0f,  1.0f,
+//	-1.0f,  1.0f, -1.0f,
+//	-1.0f,  1.0f, -1.0f,
+//	-1.0f, -1.0f, -1.0f,
+//	-1.0f, -1.0f,  1.0f,
+//	// Для каждой из шести сторон коробки
+//	0.0f,  0.0f,
+//	0.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  0.0f,
+//	0.0f,  0.0f,
+//	// Позиции вершин для стороны "право"
+//	1.0f, -1.0f, -1.0f,
+//	1.0f,  1.0f, -1.0f,
+//	1.0f,  1.0f,  1.0f,
+//	1.0f,  1.0f,  1.0f,
+//	1.0f, -1.0f,  1.0f,
+//	1.0f, -1.0f, -1.0f,
+//	// Для каждой из шести сторон коробки
+//	0.0f,  0.0f,
+//	0.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  0.0f,
+//	0.0f,  0.0f,
+//	// Позиции вершин для стороны "перед"
+//	-1.0f, -1.0f, -1.0f,
+//	-1.0f,  1.0f, -1.0f,
+//	1.0f,  1.0f, -1.0f,
+//	1.0f,  1.0f, -1.0f,
+//	1.0f, -1.0f, -1.0f,
+//	-1.0f, -1.0f, -1.0f,
+//	// Для каждой из шести сторон коробки
+//	0.0f,  0.0f,
+//	0.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  0.0f,
+//	0.0f,  0.0f,
+//	// Позиции вершин для стороны "зад"
+//	1.0f, -1.0f, 1.0f,
+//	1.0f, 1.0f, 1.0f,
+//	-1.0f, 1.0f, 1.0f,
+//	-1.0f, 1.0f, 1.0f,
+//	-1.0f, -1.0f, 1.0f,
+//	1.0f, -1.0f, 1.0f,
+//	// Для каждой из шести сторон коробки
+//	0.0f,  0.0f,
+//	0.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  1.0f,
+//	1.0f,  0.0f,
+//	0.0f,  0.0f,
+//};
