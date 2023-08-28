@@ -1,4 +1,4 @@
-C:/Users/aldes/CLionProjects/openglmodel/cmake-build-debug/CMakeFiles/glad.dir
-C:/Users/aldes/CLionProjects/openglmodel/cmake-build-debug/CMakeFiles/openglmodel.dir
-C:/Users/aldes/CLionProjects/openglmodel/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/aldes/CLionProjects/openglmodel/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+E:/OpenGL/openglmodel/cmake-build-debug/CMakeFiles/glad.dir
+E:/OpenGL/openglmodel/cmake-build-debug/CMakeFiles/openglmodel.dir
+E:/OpenGL/openglmodel/cmake-build-debug/CMakeFiles/edit_cache.dir
+E:/OpenGL/openglmodel/cmake-build-debug/CMakeFiles/rebuild_cache.dir

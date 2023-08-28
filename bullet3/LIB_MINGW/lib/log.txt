@@ -1,0 +1,5 @@
+libBulletCollision_Debug.a
+libBulletDynamics_Debug.a
+libLinearMath_Debug.a
+log.txt
+pathnamer.exe

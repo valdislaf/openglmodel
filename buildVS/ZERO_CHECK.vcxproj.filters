@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\OpenGL\openglmodel\buildVS\CMakeFiles\c07e81f18247c6edd0f5e0c33a39dcef\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\OpenGL\openglmodel\fonts\arial.ttf">
+      <Filter>Buildsystem Input Files\fonts</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{F74A7EF2-F3F5-36E5-871E-6E86552DFF3D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Buildsystem Input Files\fonts">
+      <UniqueIdentifier>{71029B8C-6D47-3950-B271-B9DA65FEEBD1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

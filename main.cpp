@@ -21,9 +21,13 @@
 #include FT_FREETYPE_H
 
 #include "SOIL/SOIL.h"
-#include "SOIL/stb_image_aug.h"
-#include "SOIL/image_helper.h"
-#include "SOIL/image_DXT.h"
+//#include "SOIL/stb_image_aug.h"
+//#include "SOIL/image_helper.h"
+//#include "SOIL/image_DXT.h"
+
+
+#include <btBulletDynamicsCommon.h>
+
 
 GLuint VBO, VAO,VAO1, VBO1, VAO2, VBO2;
 GLuint skyboxVBO, skyboxVAO;
@@ -39,46 +43,6 @@ int w = 800;
 int h = 800;
 size_t size;
 GLfloat* verticesArray = nullptr;
-//
-//GLfloat skyboxVertices[] = {
-//	// координаты вершин        // текстурные координаты
-//	// верхняя грань
-//	-1.0f,  1.0f, -1.0f,        0.0f, 1.0f,
-//	-1.0f,  1.0f,  1.0f,        0.0f, 0.0f,
-//	 1.0f,  1.0f,  1.0f,        1.0f, 0.0f,
-//	 1.0f,  1.0f, -1.0f,        1.0f, 1.0f,
-//
-//	 // нижняя грань
-//	 -1.0f, -1.0f, -1.0f,        1.0f, 1.0f,
-//	  1.0f, -1.0f, -1.0f,        0.0f, 1.0f,
-//	  1.0f, -1.0f,  1.0f,        0.0f, 0.0f,
-//	 -1.0f, -1.0f,  1.0f,        1.0f, 0.0f,
-//
-//	 // передняя грань
-//	 -1.0f,  1.0f,  1.0f,        0.0f, 1.0f,
-//	 -1.0f, -1.0f,  1.0f,        0.0f, 0.0f,
-//	  1.0f, -1.0f,  1.0f,        1.0f, 0.0f,
-//	  1.0f,  1.0f,  1.0f,        1.0f, 1.0f,
-//
-//	  // задняя грань
-//	   1.0f,  1.0f, -1.0f,        0.0f, 0.0f,
-//	   1.0f, -1.0f, -1.0f,        0.0f, 1.0f,
-//	  -1.0f, -1.0f, -1.0f,        1.0f,1.0f,
-//	  -1.0f, 1.0f, -1.0f,         1.0f, 0.0f,
-//
-//	 // правая грань
-//	 1.0f,  1.0f,  1.0f,        1.0f, 0.0f,
-//	 1.0f, -1.0f,  1.0f,        1.0f, 1.0f,
-//	 1.0f, -1.0f, -1.0f,        0.0f, 1.0f,
-//	 1.0f,  1.0f, -1.0f,        0.0f, 0.0f,
-//
-//	 // левая грань
-//	 -1.0f,  1.0f, -1.0f,        0.0f, 0.0f,
-//	 -1.0f, -1.0f, -1.0f,        1.0f, 0.0f,
-//	 -1.0f, -1.0f,  1.0f,        1.0f, 1.0f,
-//	 -1.0f,  1.0f,  1.0f,        0.0f, 1.0f
-//
-//};
 // Создание вершинных данных
 float skyboxVertices[] = {
 	// координаты вершин
@@ -122,15 +86,13 @@ float skyboxVertices[] = {
 	 -1.0f, -1.0f,  1.0f,
 	  1.0f, -1.0f,  1.0f,
 
-
 	  // верхняя грань
 	 -1.0f, 1.0f, -1.0f,
 	 1.0f, 1.0f, -1.0f,
 	 -1.0f, 1.0f,  1.0f,	  
       1.0f, 1.0f, 1.0f,
       -1.0f, 1.0f, 1.0f,
-      1.0f, 1.0f, -1.0f
-   
+      1.0f, 1.0f, -1.0f   
       
 };
 
@@ -408,6 +370,10 @@ void angspd(float &angle,float &speed) {
 }
 
 int main(int argc, char* argv[]) {
+
+	btCollisionShape* boxShape = new btBoxShape(btVector3(1, 1, 1));
+	btCollisionShape* sphereShape = new btSphereShape(1);
+
 
 	std::vector<glm::vec3> vertices{};
 	std::vector<glm::vec2> uvs{};
